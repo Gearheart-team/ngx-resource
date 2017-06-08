@@ -1,15 +1,22 @@
 import {Observable} from 'rxjs/Rx';
 
 
-export class ResourceModel<R> {
+export abstract class ResourceModel<R> {
+
+  protected $cachedRelated: {[key: string]: {id: any, data: any}} = {};
 
   $resolved: boolean;
   $observable: Observable<any>;
   $abortRequest: () => void;
   $resource: R;
+  $primaryKey: string = 'id';
+
+  constructor() {
+    this.$resource = (<any>Reflect).getMetadata('resource', this.constructor);
+  }
 
   static create(data: any = {}, commit: boolean = true) {
-    console.error('Model static create is not availbale anymore. Please use resource.createModel() method');
+    console.error('Model static create is not available anymore. Please use new YourModel() instead');
   }
 
   public $setData(data: any) {
@@ -29,7 +36,7 @@ export class ResourceModel<R> {
   }
 
   public $create() {
-    return this.$resource_method('create');
+    return this.$resource_method('save');
   }
 
   public $update() {
@@ -54,7 +61,7 @@ export class ResourceModel<R> {
   }
 
   protected isNew(): boolean {
-    return !(<any>this)['id'];
+    return !(<any>this)[this.$primaryKey];
   }
 
   private $resource_method(methodName: string) {

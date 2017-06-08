@@ -1,13 +1,24 @@
 import { Type } from '@angular/core';
-import { ResourceParamsBase } from './Interfaces';
+import {ResourceParamsBase, ResourceStorageParams} from './Interfaces';
 import { ResourceProviders } from './ResourceProviders';
 import { Resource } from './Resource';
+import {ResourceStorage} from "./ResourceStorage";
 
 
 export function ResourceParams(params: ResourceParamsBase = {}) {
 
   return function (target: Type<Resource>) {
 
+    (<any>target).init = (<any>target)._init.asObservable().filter((instance: Resource) => !!instance);
+
+    (<any>target).getStorage = (storageParams: ResourceStorageParams) => {
+      if (!!(<any>target)._storage) {
+        (<any>target)._storage.updateParams(storageParams);
+        return (<any>target)._storage;
+      } else {
+        return new ResourceStorage(target, storageParams);
+      }
+    };
 
     target.prototype.getResourceOptions = function () {
       return params;

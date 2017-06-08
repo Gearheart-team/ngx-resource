@@ -2,11 +2,21 @@ import { Http, Request } from '@angular/http';
 import { Injector } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
 import { ResourceGlobalConfig } from './ResourceGlobalConfig';
-import { ResourceParamsBase } from './Interfaces';
+import {ResourceParamsBase, ResourceResult} from './Interfaces';
 import { ResourceActionBase } from './Interfaces';
 import { ResourceModel } from './ResourceModel';
+import {BehaviorSubject} from "rxjs/BehaviorSubject";
+import {ResourceStorage} from "./ResourceStorage";
+
 
 export class Resource {
+
+  protected static _init = new BehaviorSubject<any>(undefined);
+
+  protected static _storage: ResourceStorage = undefined;
+
+  static init: Observable<any> = Observable.of(undefined);
+  static instance: Resource = undefined;
 
   private _url: string = null;
   private _path: string = null;
@@ -14,7 +24,13 @@ export class Resource {
   private _params: any = null;
   private _data: any = null;
 
-  constructor(protected http: Http, protected injector: Injector) {}
+  storageLoad: (...args: any[]) => ResourceResult<any>;
+  storage: ResourceStorage;
+
+  constructor(protected http: Http, protected injector: Injector) {
+    let model = this.initResultObject();
+    (<any>Reflect).defineMetadata('resource', this, model.constructor);
+  }
 
   /**
    * Get main url of the resource
@@ -150,7 +166,7 @@ export class Resource {
 
     // noinspection TypeScriptValidateTypes
     return methodOptions.responseInterceptor ?
-      methodOptions.responseInterceptor(requestObservable, req, methodOptions) :
+      methodOptions.responseInterceptor.bind(this)(requestObservable, req, methodOptions) :
       this.responseInterceptor(requestObservable, req, methodOptions);
 
   }

@@ -23,6 +23,7 @@ bundles
 ## JetBrains
 #################
 .idea
+*.iml
 .project
 .settings
 
@@ -42,4 +43,3 @@ Desktop.ini
 
 # Mac crap
 .DS_Store
-

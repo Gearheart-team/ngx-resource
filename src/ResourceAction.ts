@@ -7,6 +7,7 @@ import { Resource } from './Resource';
 import { ResourceModel } from './ResourceModel';
 import { ConnectableObservable, Observable, Subscriber, Subscription } from 'rxjs/Rx';
 import { ResourceGlobalConfig, TGetParamsMappingType } from './ResourceGlobalConfig';
+import {StorageAction} from "./StorageAction";
 
 
 
@@ -20,7 +21,7 @@ export function ResourceAction(methodOptions?: ResourceActionBase) {
 
   return function (target: Resource, propertyKey: string) {
 
-    (<any>target)[propertyKey] = function (...args: any[]): ResourceResult<any> | ResourceModel<Resource> {
+    (<any>target)[propertyKey] = function (...args: any[]): ResourceResult<any> | ResourceModel<any> {
 
       let data = args.length ? args[0] : null;
       let params = args.length > 1 ? args[1] : null;
@@ -36,14 +37,16 @@ export function ResourceAction(methodOptions?: ResourceActionBase) {
 
       let resourceOptions = this.getResourceOptions();
 
+      const mockRequest = ResourceGlobalConfig.mockResponses && resourceOptions.mock !== false && methodOptions.mock !== false && (!!methodOptions.mockCollection || !!resourceOptions.mockCollection);
+
       let isGetRequest = methodOptions.method === RequestMethod.Get;
 
-      let ret: ResourceResult<any> | ResourceModel<Resource> = null;
+      let ret: ResourceResult<any> | ResourceModel<any> = null;
 
-      let map: ResourceResponseMap = methodOptions.map ? methodOptions.map : this.map;
+      let map: ResourceResponseMap = methodOptions.map ? methodOptions.map.bind(this) : this.map;
       let filter: ResourceResponseFilter = methodOptions.filter ? methodOptions.filter : this.filter;
       let initObject: ResourceResponseInitResult = methodOptions.initResultObject ?
-        methodOptions.initResultObject : this.initResultObject;
+        methodOptions.initResultObject.bind(this) : this.initResultObject;
 
       if (methodOptions.isLazy) {
         ret = {};
@@ -59,7 +62,7 @@ export function ResourceAction(methodOptions?: ResourceActionBase) {
             data = data.toJSON ? data.toJSON() : toJSON(data);
 
           } else {
-            ret = initObject();
+            ret = initObject.bind(this)();
           }
 
         }
@@ -114,6 +117,7 @@ export function ResourceAction(methodOptions?: ResourceActionBase) {
           let defPathParams = dataAll[3];
 
           let usedPathParams: any = {};
+          let usedPathParamsValues: any = {};
 
           if (!Array.isArray(data) || params) {
 
@@ -160,7 +164,9 @@ export function ResourceAction(methodOptions?: ResourceActionBase) {
                 }
                 url = url.substr(0, url.indexOf(pathParam));
                 break;
-              }
+              } else {
+                usedPathParamsValues[pathKey] = value;
+              };
 
               // Replacing in the url
               url = url.replace(pathParam, value);
@@ -216,7 +222,7 @@ export function ResourceAction(methodOptions?: ResourceActionBase) {
 
 
           // Setting search params
-          let search: URLSearchParams = new URLSearchParams();
+          let search: URLSearchParams = !!methodOptions.queryEncoder ? new URLSearchParams('', new methodOptions.queryEncoder()) : new URLSearchParams();
 
           if (!params) {
             for (let key in searchParams) {
@@ -271,9 +277,27 @@ export function ResourceAction(methodOptions?: ResourceActionBase) {
             return;
           }
 
-          // Doing the request
-          let requestObservable = this._request(req, methodOptions);
+          let requestObservable: Observable<any>;
 
+          if (mockRequest) {
+            let mockCollection = !!methodOptions.mockCollection ? methodOptions.mockCollection : {collection: resourceOptions.mockCollection};
+            let resp: any = null;
+            if (typeof mockCollection === 'function') {
+              resp = mockCollection(propertyKey, usedPathParamsValues, JSON.parse(body), methodOptions.method);
+            } else {
+              resp = getMockedResponse(mockCollection, usedPathParamsValues, JSON.parse(body), methodOptions.method);
+            }
+            resp = new FakeResponse(resp);
+            requestObservable = Observable.from([resp]);
+
+            // noinspection TypeScriptValidateTypes
+            requestObservable = methodOptions.responseInterceptor ?
+              methodOptions.responseInterceptor.bind(this)(requestObservable, req, methodOptions) :
+              this.responseInterceptor(requestObservable, req, methodOptions);
+          } else {
+            // Doing the request
+            requestObservable = this._request(req, methodOptions);
+          }
 
           if (methodOptions.isLazy) {
 
@@ -302,7 +326,7 @@ export function ResourceAction(methodOptions?: ResourceActionBase) {
                             .map(map)
                             .map((respItem: any) => {
                               respItem.$resource = this;
-                              return setDataToObject(initObject(), respItem);
+                              return setDataToObject(initObject.bind(respItem.$resource)(), respItem);
                             })
                         );
 
@@ -352,6 +376,12 @@ export function ResourceAction(methodOptions?: ResourceActionBase) {
 
           }
 
+          if (!!this.storage && !!methodOptions.storageAction) {
+            mainObservable = mainObservable.do((resp: any) => {
+              methodOptions.storageAction.bind(this)(this.storage, resp);
+            });
+          }
+
           releaseMainDeferredSubscriber();
 
 
@@ -362,6 +392,9 @@ export function ResourceAction(methodOptions?: ResourceActionBase) {
 
     };
 
+    if (!!methodOptions.storageAction && methodOptions.storageAction === StorageAction.LOAD) {
+        target.storageLoad = (<any>target)[propertyKey];
+    };
   };
 
 }
@@ -464,4 +497,75 @@ function toJSON(obj: any):any {
 
   }
   return retObj;
+}
+
+
+class FakeResponse {
+  private _resp: any;
+
+  constructor(resp: any) {
+    this._resp = resp;
+  }
+
+  get _body(): string {
+    return JSON.stringify(this._resp);
+  }
+
+  json = () => this._resp;
+}
+
+
+function getMockedResponse(collection: {collection: any, lookupParams?: any}, params: any, data: any, requestMethod: RequestMethod) {
+  if (requestMethod === RequestMethod.Get) {
+    if (Object.keys(params).length === 0) {
+      return collection.collection;
+    } else {
+      if (!collection.lookupParams || Object.keys(collection.lookupParams).length === 0) {
+        let result = collection.collection;
+        for (let key in params) {
+          if (params.hasOwnProperty(key)) {
+            result = result.filter((item: any) => item[key] === params[key]);
+          }
+        }
+        return !!result.length ? result[0] : null;
+      } else {
+        return collection.collection.filter((itm: any) => {
+          let result: boolean = true;
+          for (let key in collection.lookupParams) {
+            if (collection.lookupParams.hasOwnProperty(key)) {
+              result = result && params[key] === itm[collection.lookupParams[key]];
+            }
+          }
+          return result;
+        });
+      }
+    }
+  } else if (requestMethod === RequestMethod.Post) {
+    collection.collection.push(data);
+    return data;
+  } else if (requestMethod === RequestMethod.Put || requestMethod === RequestMethod.Patch ) {
+      let result = collection.collection.find((item: any) => {
+        for (let key in params) {
+          if (item[key] !== params[key]) {
+            return false;
+          }
+        }
+        return true;
+      });
+      if (!!result) {
+        Object.assign(result, data);
+        return result;
+      }
+  } else if (requestMethod === RequestMethod.Delete) {
+      let resultIdx = collection.collection.findIndex((item: any) => {
+        for (let key in params) {
+          if (item[key] !== params[key]) {
+            return false;
+          }
+        }
+        return true;
+      });
+      collection.collection.splice(resultIdx, 1);
+  }
+  return null;
 }

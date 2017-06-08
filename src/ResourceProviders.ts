@@ -28,7 +28,9 @@ export class ResourceProviders {
     this.providers[subSet].push(
       {
         provide: resource,
-        useFactory: (...args: any[]) => new resource(...args),
+        useFactory: (...args: any[]) => {
+          return new resource(...args);
+        },
         deps: deps
       }
     );
