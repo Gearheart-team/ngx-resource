@@ -1,13 +1,13 @@
-[![npm version](https://badge.fury.io/js/ngx-resource.svg)](http://badge.fury.io/js/ngx-resource)
+[![npm version](https://badge.fury.io/js/ngx-resource-gearheart.svg)](http://badge.fury.io/js/ngx-resource-gearheart)
 
-[![NPM](https://nodei.co/npm/ngx-resource.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/ngx-resource/)
+[![NPM](https://nodei.co/npm/ngx-resource-gearheart.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/ngx-resource/)
 
 # ngx-resource
 Resource (REST) Client for Angular 2
 
 To use the module install the module using below command
 
-`npm install ngx-resource --save`
+`npm install ngx-resource-gearheart --save`
 
 ### How to use articles
 Good explanation how to use the library in the article "[Angular2, a rest client interface](http://blog.slals.io/angular2-a-rest-client-interface)" by [Jonathan Serra](https://github.com/Slaals)

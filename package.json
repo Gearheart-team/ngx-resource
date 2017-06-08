@@ -1,7 +1,7 @@
 {
-  "name": "ngx-resource",
-  "version": "2.0.5",
-  "description": "Angular2 resource module with simple decorators",
+  "name": "ngx-resource-gearheart",
+  "version": "1.0.0",
+  "description": "Angular2 resource module with simple decorators. Customized by Gearheart.",
   "scripts": {
     "clear": "rm ./*.d.ts && rm ./*.metadata.json && rm ./index.js && rm ./ngx-resource.js && rm ./src/*.json && rm ./src/*.d.ts && rm ./src/*.js",
     "ngc": "ngc",
@@ -12,6 +12,7 @@
     "build": "webpack && cp bundles/ngx-resource.umd.js bundles/index.js"
   },
   "keywords": [
+    "ngx-resource-gearheart",
     "ngx-resource",
     "ngx-resource-rest",
     "ng2-resource",
@@ -26,14 +27,14 @@
   "typings": "index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/troyanskiy/ng2-resource-rest.git"
+    "url": "git+https://github.com/Gearheart-team/ngx-resource-gearheart.git"
   },
   "author": "Roman Rosluk <roma@redbox.by>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/troyanskiy/ng2-resource-rest/issues"
+    "url": "https://github.com/Gearheart-team/ngx-resource-gearheart/issues"
   },
-  "homepage": "https://github.com/troyanskiy/ng2-resource-rest#readme",
+  "homepage": "https://github.com/Gearheart-team/ngx-resource-gearheart#readme",
   "peerDependencies": {
     "@angular/core": ">=2.0.0",
     "@angular/common": ">=2.0.0",
