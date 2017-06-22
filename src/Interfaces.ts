@@ -2,23 +2,8 @@ import { Observable } from 'rxjs/Rx';
 import { Request, RequestMethod, QueryEncoder } from '@angular/http';
 import { Type } from '@angular/core';
 import { Resource } from './Resource';
-import { NgModule } from '@angular/core/src/metadata/ng_module';
-import { TypeDecorator } from '@angular/core/src/util/decorators';
 import {ResourceStorage} from "./ResourceStorage";
 
-
-declare module '@angular/core' {
-  interface NgModuleExtended extends NgModule {
-    resources?: any[];
-  }
-
-  interface NgModuleDecorator {
-    (obj?: NgModuleExtended): TypeDecorator;
-    new (obj?: NgModuleExtended): NgModuleExtended;
-  }
-
-  const NgModule: NgModuleDecorator;
-}
 
 export interface ResourceRequestInterceptor {
   (req: Request, methodOptions?: ResourceActionBase): Request;

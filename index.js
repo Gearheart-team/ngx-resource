@@ -1,12 +1,3 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
 import { NgModule, Injector } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpModule } from '@angular/http';
@@ -23,7 +14,7 @@ export * from './src/ResourceStorage';
 export * from './src/SelectStorage';
 export * from './src/StorageAction';
 export * from './src/fields';
-var ResourceModule = ResourceModule_1 = (function () {
+var ResourceModule = (function () {
     function ResourceModule(_injector) {
         var _this = this;
         this._injector = _injector;
@@ -38,23 +29,25 @@ var ResourceModule = ResourceModule_1 = (function () {
     }
     ResourceModule.forRoot = function () {
         return {
-            ngModule: ResourceModule_1,
+            ngModule: ResourceModule,
             providers: ResourceProviders.providers[ResourceProviders.mainProvidersName]
         };
     };
     ResourceModule.forChild = function (subSet) {
         return {
-            ngModule: ResourceModule_1,
+            ngModule: ResourceModule,
             providers: ResourceProviders.providers[subSet] ? ResourceProviders.providers[subSet] : []
         };
     };
     return ResourceModule;
 }());
-ResourceModule = ResourceModule_1 = __decorate([
-    NgModule({
-        imports: [CommonModule, HttpModule]
-    }),
-    __metadata("design:paramtypes", [Injector])
-], ResourceModule);
 export { ResourceModule };
-var ResourceModule_1;
+ResourceModule.decorators = [
+    { type: NgModule, args: [{
+                imports: [CommonModule, HttpModule]
+            },] },
+];
+/** @nocollapse */
+ResourceModule.ctorParameters = function () { return [
+    { type: Injector, },
+]; };

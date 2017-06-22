@@ -12,7 +12,8 @@ export abstract class ResourceModel<R> {
   $primaryKey: string = 'id';
 
   constructor() {
-    this.$resource = (<any>Reflect).getMetadata('resource', this.constructor);
+    const resource = (<any>Reflect).getMetadata('resource', this.constructor);
+    this.$resource = !!resource && resource.constructor.instance;
   }
 
   static create(data: any = {}, commit: boolean = true) {

@@ -2,7 +2,8 @@ var ResourceModel = (function () {
     function ResourceModel() {
         this.$cachedRelated = {};
         this.$primaryKey = 'id';
-        this.$resource = Reflect.getMetadata('resource', this.constructor);
+        var resource = Reflect.getMetadata('resource', this.constructor);
+        this.$resource = !!resource && resource.constructor.instance;
     }
     ResourceModel.create = function (data, commit) {
         if (data === void 0) { data = {}; }
