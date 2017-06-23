@@ -1,6 +1,6 @@
 [![npm version](https://badge.fury.io/js/ngx-resource-gearheart.svg)](http://badge.fury.io/js/ngx-resource-gearheart)
 
-[![NPM](https://nodei.co/npm/ngx-resource-gearheart.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/ngx-resource/)
+[![NPM](https://nodei.co/npm/ngx-resource-gearheart.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/ngx-resource-gearheart/)
 
 # ngx-resource
 Resource (REST) Client for Angular 2
@@ -55,7 +55,7 @@ export class NewsRes extends Resource {
     path: '/{!id}'
   })
   get: ResourceMethod<{id: any}, INews>;
-  
+
   @ResourceAction({
     path: '/{!id}'
   })
@@ -206,20 +206,20 @@ New model migration steps:
 1. Model's resource class
     1. Remove `static model`
     1. Overwrite default `initResultObject()` resource method. Normally it should just contain `return new MyModel()`
-    
+
 Please check bellow the example.
 
 
 ## Version 1.14.0 (Removed broken chance from ver 1.13.0)
 Added resource method `initResultObject` which is used to create return object or items in returned array.<br>
-The method should return object. If method `$setData` exists on the return object, then it will be called with 
+The method should return object. If method `$setData` exists on the return object, then it will be called with
 received data, so the method is kind of constructor to set received data. If method does not exists on the
 object, then Object.assign will be used to set received data. See example below.
 
 
 ## Version 1.13.0 (Might Broke)
 `map` method is used to create main return object<br>
-`map` method will be called with `null` as data in order to create initial object 
+`map` method will be called with `null` as data in order to create initial object
 and again will be called with real data after receiving.
 
 See example of usage below
@@ -227,7 +227,7 @@ See example of usage below
 ## Version 1.12.0
 
 Added possibility to switch array/object mapping to get params.
-For now it's possible to switch between 2 ways of mapping, which are: 
+For now it's possible to switch between 2 ways of mapping, which are:
 - `TGetParamsMappingType.Plain` (default and old behavior)<br>
 `params: ['one', 'two']` will be mapped to `/some/url/?params=one&params=two`
 - `TGetParamsMappingType.Braket` (proposed by [PR #87](https://github.com/troyanskiy/ng2-resource-rest/pull/87))<br>
@@ -235,7 +235,7 @@ For now it's possible to switch between 2 ways of mapping, which are:
 `params: { data: ['one', 'two'] }` will be mapped to `/some/url?params[data][0]=one&params[data][1]=two`
 
 ## Version 1.11.0
- 
+
 Added protected method _request to Resource class. Can be used to replace default http requests with custom one.
 
 
@@ -661,7 +661,7 @@ export class TestModel extends ResourceModel<TestResource> implements ITestModel
 
   id: string;
   name: string;
-  
+
   $setData(data: any) {
     // You can overwrite $setData method
     if (data) {
@@ -674,7 +674,7 @@ export class TestModel extends ResourceModel<TestResource> implements ITestModel
   protected isNew(): boolean {
     return !this.id;
   }
-  
+
 }
 
 
@@ -708,30 +708,30 @@ export class TestComponent implements OnInit {
   constructor(private testRes: TestResource) {}
 
   ngOnInit() {
-  
+
     let modelTest = this.testRes.createModel();
     console.log('New modelTest', modelTest);
-  
+
     modelTest.$save().$observable.subscribe(() => {
       console.log('Saved and updated modelTest', modelTest);
     });
-  
+
     let modelTest2 = this.testRes.query();
     console.log('Array of models', modelTest2);
-    
+
     modelTest2.$observable.subscribe(() => {
       // Data received
       console.log('Array filled with test models', modelTest2);
-  
+
       let modelTest3 = modelTest2[1];
-  
+
       modelTest3.name = 'Roma';
       modelTest3.$save().$observable.subscribe(() => {
         console.log('Saved and updated', modelTest3);
       });
-  
+
     });
-  
+
   }
 
 );
@@ -746,15 +746,15 @@ export class CTest {
 
   prop1: string = '';
   prop2: string = '';
-  
+
   get prop(): string {
     return this.prop1 + ' ' + this.prop2;
   }
-  
+
   constructor(data: any = null) {
     this.$setData(data);
   }
-  
+
   $setData(data: any) {
     if (data) {
       this.prop1 = data.prop1;
@@ -780,7 +780,7 @@ export class TestRes extends Resource {
     path: '/{!id}'
   })
   get: ResourceMethod<{id: any}, CTest>;
-  
+
   initResultObject(): any {
     return new CTest();
   }
@@ -797,7 +797,7 @@ export class TestComponent implements OnInit {
 
   list: CTest[] = [];
   test: CTest;
-  
+
   prop: string;
 
   constructor(private testRes:TestRes) {}
@@ -807,11 +807,11 @@ export class TestComponent implements OnInit {
     this.list = this.testRes.query();
 
     this.test = this.testRes.get({id:1});
-    
+
     this.prepareData(); // will not set prop, test is not yet resolved
     console.log(this.test.prop); // a space ' ' will be returned because data is not yet received
-    
-    
+
+
     // so to get the prop we will need to wait data to be received
     this.test
       .$observable
@@ -820,7 +820,7 @@ export class TestComponent implements OnInit {
         () => this.prepareData()
       );
   }
-  
+
   private preprareData() {
     if (this.test && this.test.$resolved) {
       this.prop = this.test.prop;
