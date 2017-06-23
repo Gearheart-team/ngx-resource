@@ -283,9 +283,9 @@ export function ResourceAction(methodOptions?: ResourceActionBase) {
             let mockCollection = !!methodOptions.mockCollection ? methodOptions.mockCollection : {collection: resourceOptions.mockCollection};
             let resp: any = null;
             if (typeof mockCollection === 'function') {
-              resp = mockCollection(propertyKey, usedPathParamsValues, JSON.parse(body), methodOptions.method);
+              resp = mockCollection(propertyKey, usedPathParamsValues, searchParams, JSON.parse(body), methodOptions.method);
             } else {
-              resp = getMockedResponse(mockCollection, usedPathParamsValues, JSON.parse(body), methodOptions.method);
+              resp = getMockedResponse(mockCollection, usedPathParamsValues, searchParams, JSON.parse(body), methodOptions.method);
             }
             resp = new FakeResponse(resp);
             requestObservable = Observable.from([resp]);
@@ -515,7 +515,7 @@ class FakeResponse {
 }
 
 
-function getMockedResponse(collection: {collection: any, lookupParams?: any}, params: any, data: any, requestMethod: RequestMethod) {
+function getMockedResponse(collection: {collection: any, lookupParams?: any}, params: any, searchParams: any, data: any, requestMethod: RequestMethod) {
   if (requestMethod === RequestMethod.Get) {
     if (Object.keys(params).length === 0) {
       return collection.collection;

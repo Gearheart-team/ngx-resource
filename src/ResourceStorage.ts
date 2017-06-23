@@ -17,24 +17,6 @@ export class ResourceStorage {
     this.updateParams(params);
     this.result = Object.assign(this.resultData, {$load: this.load.bind(this), $resolved: false});
 
-    /*this.result.next = (): IteratorResult<any> => {
-      if (this._iterationPointer < this.resultData.length) {
-          return {
-            done: false,
-            value: this.resultData[this._iterationPointer++]
-          };
-        } else {
-          return {
-            done: true,
-            value: null
-          };
-        }
-    };
-
-    this.result[Symbol.iterator] = () => {
-      return this.result;
-    };*/
-
     this._resultSubject = new BehaviorSubject(this.result);
     this.result.$observable = this._resultSubject.asObservable();
 
