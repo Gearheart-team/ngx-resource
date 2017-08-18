@@ -30,11 +30,6 @@ export class ResourceModule {
       const resourceInstance = this._injector.get(ResourceType);
       ResourceType.instance = resourceInstance;
     });
-    providers.forEach(provider => {
-      const ResourceType = (<any>provider).provide;
-      const resourceInstance = this._injector.get(ResourceType);
-      (<any>ResourceType)._init.next(resourceInstance);
-    });
   }
 
   static forRoot(): ModuleWithProviders {

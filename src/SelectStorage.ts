@@ -5,12 +5,17 @@ import { ResourceStorageParams } from './Interfaces';
 export function SelectStorage(resource: Type<Resource>, params?: ResourceStorageParams) {
 
   return function (target: any, propertyKey: string) {
-    const storage = (<any>resource).getStorage(params);
+    const nativeInit = target.ngOnInit;
+    target.ngOnInit = function () {
+      if (!!nativeInit) {
+        nativeInit.bind(this)();
+      }
+      const storage = (<any>resource).instance.storage;
 
-    storage._resultSubject.subscribe((result: any) => {
-      (<any>target)[propertyKey] = result;
-    });
-
+      storage._resultSubject.subscribe((result: any) => {
+        (<any>target)[propertyKey] = result;
+      });
+    };
   };
 
 }

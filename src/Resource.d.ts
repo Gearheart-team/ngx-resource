@@ -4,14 +4,13 @@ import { Observable } from 'rxjs/Rx';
 import { ResourceParamsBase, ResourceResult } from './Interfaces';
 import { ResourceActionBase } from './Interfaces';
 import { ResourceModel } from './ResourceModel';
-import { BehaviorSubject } from "rxjs/BehaviorSubject";
-import { ResourceStorage } from "./ResourceStorage";
+import { ResourceStorage } from './ResourceStorage';
+export interface Resource {
+    initStorage?(): ResourceStorage;
+}
 export declare class Resource {
     protected http: Http;
     protected injector: Injector;
-    protected static _init: BehaviorSubject<any>;
-    protected static _storage: ResourceStorage;
-    static init: Observable<any>;
     static instance: Resource;
     private _url;
     private _path;

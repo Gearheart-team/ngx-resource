@@ -1,34 +1,22 @@
 import { BehaviorSubject } from "rxjs/BehaviorSubject";
 var ResourceStorage = (function () {
-    function ResourceStorage(resource, params) {
-        var _this = this;
+    function ResourceStorage(resource, queryParams) {
         this.resource = resource;
-        this.queryParams = {};
+        this.queryParams = queryParams;
         this._iterationPointer = 0;
-        this.loadImmediately = true;
         this.resultData = [];
-        this.updateParams(params);
+        this.queryParams = queryParams || {};
         this.result = Object.assign(this.resultData, { $load: this.load.bind(this), $resolved: false });
         this._resultSubject = new BehaviorSubject(this.result);
         this.result.$observable = this._resultSubject.asObservable();
-        resource.init.subscribe(function () {
-            _this.resource.instance.storage = _this;
-            if (_this.loadImmediately) {
-                _this.load();
-            }
-            _this.result.$resource = _this.resource.instance;
-        });
+        this.result.$resource = this.resource;
+        this.load();
     }
-    ResourceStorage.prototype.updateParams = function (params) {
-        if (params === void 0) { params = {}; }
-        this.queryParams = params.queryParams || {};
-        this.loadImmediately = params.loadImmediately === false ? false : true;
-    };
     ResourceStorage.prototype.load = function (args) {
         var qp = !!args ? args : this.queryParams;
-        var action = this.resource.instance.storageLoad;
+        var action = this.resource.storageLoad;
         if (!!action) {
-            action.bind(this.resource.instance)(qp);
+            action.bind(this.resource)(qp);
         }
         else {
             throw "Storage LOAD action is not defined";

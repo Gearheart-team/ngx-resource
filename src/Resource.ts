@@ -2,20 +2,17 @@ import { Http, Request } from '@angular/http';
 import { Injector } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
 import { ResourceGlobalConfig } from './ResourceGlobalConfig';
-import {ResourceParamsBase, ResourceResult} from './Interfaces';
+import { ResourceParamsBase, ResourceResult } from './Interfaces';
 import { ResourceActionBase } from './Interfaces';
 import { ResourceModel } from './ResourceModel';
-import {BehaviorSubject} from "rxjs/BehaviorSubject";
-import {ResourceStorage} from "./ResourceStorage";
+import { ResourceStorage } from './ResourceStorage';
 
+export interface Resource {
+  initStorage?(): ResourceStorage;
+}
 
 export class Resource {
 
-  protected static _init = new BehaviorSubject<any>(undefined);
-
-  protected static _storage: ResourceStorage = undefined;
-
-  static init: Observable<any> = Observable.of(undefined);
   static instance: Resource = undefined;
 
   private _url: string = null;
@@ -30,6 +27,9 @@ export class Resource {
   constructor(protected http: Http, protected injector: Injector) {
     let model = this.initResultObject();
     (<any>Reflect).defineMetadata('resource', this, model.constructor);
+    if (!!this.initStorage) {
+      this.storage = this.initStorage();
+    }
   }
 
   /**
@@ -150,15 +150,11 @@ export class Resource {
     return null;
   }
 
-
   createModel(): ResourceModel<any> {
     let ret = this.initResultObject();
     ret.$resource = this;
     return ret;
   }
-
-
-
 
   protected _request(req: Request, methodOptions: ResourceActionBase = {}): Observable<any> {
 
@@ -170,7 +166,6 @@ export class Resource {
       this.responseInterceptor(requestObservable, req, methodOptions);
 
   }
-
 
   private _getUrl(methodOptions?: ResourceActionBase): string|Promise<string> {
     return null;

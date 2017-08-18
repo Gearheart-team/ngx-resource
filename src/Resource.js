@@ -1,6 +1,4 @@
-import { Observable } from 'rxjs/Rx';
 import { ResourceGlobalConfig } from './ResourceGlobalConfig';
-import { BehaviorSubject } from "rxjs/BehaviorSubject";
 var Resource = (function () {
     function Resource(http, injector) {
         this.http = http;
@@ -12,6 +10,9 @@ var Resource = (function () {
         this._data = null;
         var model = this.initResultObject();
         Reflect.defineMetadata('resource', this, model.constructor);
+        if (!!this.initStorage) {
+            this.storage = this.initStorage();
+        }
     }
     /**
      * Get main url of the resource
@@ -144,7 +145,4 @@ var Resource = (function () {
     return Resource;
 }());
 export { Resource };
-Resource._init = new BehaviorSubject(undefined);
-Resource._storage = undefined;
-Resource.init = Observable.of(undefined);
 Resource.instance = undefined;
