@@ -2,241 +2,279 @@
 
 [![NPM](https://nodei.co/npm/ngx-resource-gearheart.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/ngx-resource-gearheart/)
 
-# ngx-resource
-Resource (REST) Client for Angular 2
+# ngx-resource-gearheart
+Resource (REST) Client for Angular 2 customized by Gearheart. Module which allows REST API Entities as objects.
+
+###Definitions of Terms
+ 
+**Resource**
+  Angular service which manages requests for API Entity.
+  
+**ResourceAction**
+  Some action for API Entity. Such as retrieve, list, create, update, delete etc.
+  
+**ResourceModel**
+  Object for API Entity. Resource wraps each received entity item to model.
+  
+### Installation
 
 To use the module install the module using below command
 
 `npm install ngx-resource-gearheart --save`
 
-### How to use articles
-Good explanation how to use the library in the article "[Angular2, a rest client interface](http://blog.slals.io/angular2-a-rest-client-interface)" by [Jonathan Serra](https://github.com/Slaals)
 
-### How to use
+### Quick Start
 
-***Creating simple resource CRUD (./resources/NewsRes.ts)***
-```ts
-import {Injectable} from '@angular/core';
-import {Resource, ResourceParams, ResourceAction, ResourceMethod} from 'ngx-resource';
-import {RequestMethod} from '@angular/http';
+Create your First Resource and save it as users.resource.ts:
 
-interface IQueryInput {
-  page?: number;
-  perPage?: number;
-  dateFrom?: string;
-  dateTo?: string;
-  isRead?: string;
-}
+```typescript
 
-interface INewsShort {
+import { Resource, ResourceAction, ResourceParams, ResourceMethod} from 'ngx-resource-gearheart';
+ 
+export interface IUser {
   id: number;
-  date: string;
-  title: string;
-  text: string;
+  first_name: string;
+  last_name: string;
 }
-
-interface INews extends INewsShort {
-  image?: string;
-  fullText: string;
-}
-
-@Injectable()
+ 
 @ResourceParams({
-  url: 'https://domain.net/api/users'
+  url: '/api/users'
 })
-export class NewsRes extends Resource {
-
+export class UsersResource extends Resource {
+ 
   @ResourceAction({
     isArray: true
   })
-  query: ResourceMethod<IQueryInput, INewsShort[]>;
+  query: ResourceMethod<{}, IUser[]>
 
-  @ResourceAction({
-    path: '/{!id}'
-  })
-  get: ResourceMethod<{id: any}, INews>;
+}
+```
 
-  @ResourceAction({
-    path: '/{!id}'
-  })
-  get2: ResourceMethodStrict<INews, {id: any}, INews>;
+Add ResourceModule into your AppModule:
 
-  @ResourceAction({
-    method: RequestMethod.Post
-  })
-  save: ResourceMethod<INews, INews>;
+```typescript
 
-  @ResourceAction({
-    method: RequestMethod.Put,
-    path: '/{!id}'
-  })
-  update: ResourceMethod<INews, INews>;
+import { ResourceModule } from 'ngx-resource-gearheart';
+import './users.resource';
+ 
+@NgModule({
+  imports: [ResourceModule.forRoot(),...]
+})
+export class AppModule() {}
 
-  @ResourceAction({
-    method: RequestMethod.Delete,
-    path: '/{!id}'
-  })
-  remove: ResourceMethod<{id: any}, any>;
+```
 
-  // Alias to save
-  create(data: INews, callback?: (res: INews) => any): INews {
-    return this.save(data, callback);
+Pay attention to row #2 in code above. It needed for compile our resource and provide its singleton to our app.
+Thats all. Now you can use resource in app components:
+
+```typescript
+
+import { Component, OnInit } from '@angular/core';
+import { UsersResource, IUser } from './users.resource';
+ 
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss']
+})
+export class AppComponent implements OnInit{
+  
+  users: IUser[];
+
+  constructor(private ur: UsersResource) {}
+  
+  ngOnInit() {
+    // simple way:
+    this.users = this.ur.query();
+    
+    // other way:
+    this.ur.query()
+      .$observable
+      .subscribe(users => { 
+        console.log('$observable resolved!!!');
+        // ... some code
+        this.users = users;
+      });
   }
 
 }
+
 ```
 
-Or it is possible to use predefined CRUD resource which will do exactly the same as resource above
-``` ts
-@Injectable()
-@ResourceParams({
-  url: 'https://domain.net/api/users'
-})
-export class NewRes extends ResourceCRUD<IQueryInput, INewsShort, INews> {}
-```
+Each ResourceAction - it is function which returns API response (array or object) with additional properties and method:
+  
+  `$observable` - request observable. 
+  
+  `$resolved` - flag which have `false` until request observable is not resolved.
+  
+  `$abortRequest` - method which interrupts request immediately.
+   
+So you can use simple way from code above for call action if you just want define value for variable. Or you can use `$observable` if you want to do something when request observable will be resolved.    
 
-***Using in your app.***
 
-First of all need to add Resource Module to your app Module. Simply
-import ResourceModule.forRoot() to your all root module
+### Resource Definition
 
-```ts
-@NgModule({
-  imports: [
-    BrowserModule,
-    ResourceModule.forRoot()
-  ],
-  declarations: [
-    AppComponent
-  ],
-  bootstrap: [AppComponent]
-})
-export class AppModule {
+Each resource should be decorated by `@ResourceParams`. It is needed to define resource behavior and also for provide resource singleton to your app.
+The `ResourceParams` decorator can be called with one argument. Argument should be `ResourceParamsBase` object described bellow.
+
+
+### Resource Actions Definition
+
+Your Resource can contains any actions which you wants. Each action in resource should be decorated by `@ResourceAction`.
+The ResourceAction decorator can be called with one argument. Argument should be `ResourceActionBase` object described bellow.
+Resource Action Params overrides resource params.
+
+
+### Resource Model Definition
+
+Resource can wraps each returned API entity to object. You should define model class to use this feature.
+
+```typescript
+
+import { ResourceModel } from 'ngx-resource-gearheart';
+import { UsersResource } from './users.resource';
+
+
+export interface IUser {
+  id: number;
+  name: string;
+  avatar: string;
+}
+
+export interface User extends IUser, ResourceModel<UsersResource> {
+
+}
+
+export class User extends ResourceModel<UsersResource> {
+
 }
 ```
 
-Than inject resource into your components
-```ts
-import {Component, OnInit} from '@angular/core';
-import {NewsRes} from '../../resources/index';
+Next step we should update our resource: 
+
+
+```typescript
+
+...
+import { User } from './user.model';
+
+@ResourceParams({
+  url: '/api/users'
+})
+export class UsersResource extends Resource {
+ 
+  ...
+  
+  initResultObject() {
+    return new User();
+  }
+  
+  ...
+
+}
+```
+
+And we can use our model in components:
+
+```typescript
+
+import { Component, OnInit } from '@angular/core';
+import { User } from './user.model';
+ 
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss']
+})
+export class AppComponent implements OnInit{
+
+  constructor() {}
+  
+  ngOnInit() {
+    let user = new User();
+    user.name = 'John Dow';
+    user.$save();
+  }
+
+}
+
+```
+
+
+### Use Resource Storage
+
+Resource Storage it is "smart cache" for resources. If we want use storage for resource we should define it explicit:
+
+```typescript
+
+...
+
+@ResourceParams({
+  url: '/api/users'
+})
+export class UsersResource extends Resource {
+ 
+  ...
+  
+  initStorage() {
+    return new ResourceStorage(this)
+  }
+ 
+  @ResourceAction({
+    isArray: true,
+    storageAction: StorageAction.LOAD
+  })
+  query: ResourceMethod<{}, User[]>;
+    
+  @ResourceAction({
+    method: RequestMethod.POST,
+    storageAction: StorageAction.ADD
+  })
+  save: ResourceMethod<User, User>;
+  
+  @ResourceAction({
+    method: RequestMethod.PUT,
+    storageAction: StorageAction.UPDATE
+  })
+  update: ResourceMethod<User, User>;
+
+}
+```
+
+And now you can use it in every component. If you use SelectStorage in few components you don't call API request in each of components. If you change some object then it will be changed in storage.   
+
+```typescript
+
+import { Component, OnInit } from '@angular/core';
+import { SelectedStorage, SelectStorage } from 'ngx-resource-gearheart';
+import { UsersResource } from '../resources/users.resource';
+import { Offer } from '../resources/models/user.model';
+
 
 @Component({
-  moduleId: module.id,
-  selector: 'news-component',
-  templateUrl: 'news.page.component.html',
-  styleUrls: ['news.page.component.css'],
+  selector: 'app-users',
+  templateUrl: './users.component.html',
+  styleUrls: ['./users.component.scss']
 })
-export class PageComponent implements OnInit {
+export class UsersComponent implements OnInit {
 
-  newList: INewsShort[] = [];
+  @SelectStorage(UsersResource) users: SelectedStorage<Offer>;
 
-  constructor(private newsRes:NewsRes) {}
+  constructor() { }
 
-  ngOnInit():any {
-
-    // That will execute GET request https://domain.net/api/users
-    // and after will assign the data to this.newsList
-    this.newList = this.newsRes.query();
-
-    // Execute GET request https://domain.net/api/users?page=1&perPage=20
-    this.newList = this.newsRes.query({page: 1, perPage: 20});
-
-    // Execute GET request https://domain.net/api/users/12
-    // and assing the data to oneNews variable
-    let oneNews = this.newsRes.get({id: 12});
-
-    // or
-    let otherOneNews: INews = null;
-    this.newsRes.get({id: 12}, (receivedNews: INews) => {
-      otherOneNews = receivedNews;
-      // do some magic after receiving news
-    });
-
-    // or :)
-    let otherSomeNews = this.newsRes.get({id: 12});
-    otherSomeNews
-      .$observable
-      .subscribe(
-        (receivedNews: INews) => {
-          otherOneNews = receivedNews;
-          // do some magic after receiving news
-        }
-      );
-
-    // Also you can cancel the requests
-    let news = this.newsRes.get({id: 12});
-    news.$abortRequest();
-
-    // That kind of ways with callback, $observable and $abortRequest
-    // can be used on all methods
-
-
-    // Creating the news
-    let newNews:INews = {
-      date: '17.06.2016',
-      title: 'The great day',
-      text: 'The best day ever',
-      fullText: 'Should be full text here';
-    }
-    // That will execute the POST request to https://domain.net/api/users
-    // Expected to receive created news object which will be assigned to newNews
-    let newNews = this.newsRes.save(newNews);
-
-    // and so on
-
+  ngOnInit() {
+    console.log(this.users);
   }
+
 }
 
 ```
-# Changes
-
-## Version 2.0.0
-Support Angular 4
-
-#### Breaking
-ResourceModel is simplified.
-
-New model migration steps:
-1. Model Class
-    1. Remove model decorator.
-    1. Remove `static resourceClass`.
-    1. If you have data `id` different then default `id`, then overwrite method `protected isNew(): boolean`.
-    `Create` resource method will be used if `isNew()` return's `true`, otherwise `update` method will be called.
-    1. Static `create` method does not exists anymore. Please use `myResource.createModel()`.
-1. Model's resource class
-    1. Remove `static model`
-    1. Overwrite default `initResultObject()` resource method. Normally it should just contain `return new MyModel()`
-
-Please check bellow the example.
 
 
-## Version 1.14.0 (Removed broken chance from ver 1.13.0)
-Added resource method `initResultObject` which is used to create return object or items in returned array.<br>
-The method should return object. If method `$setData` exists on the return object, then it will be called with
-received data, so the method is kind of constructor to set received data. If method does not exists on the
-object, then Object.assign will be used to set received data. See example below.
+### Resources usage recommendations
 
-
-## Version 1.13.0 (Might Broke)
-`map` method is used to create main return object<br>
-`map` method will be called with `null` as data in order to create initial object
-and again will be called with real data after receiving.
-
-See example of usage below
-
-## Version 1.12.0
-
-Added possibility to switch array/object mapping to get params.
-For now it's possible to switch between 2 ways of mapping, which are:
-- `TGetParamsMappingType.Plain` (default and old behavior)<br>
-`params: ['one', 'two']` will be mapped to `/some/url/?params=one&params=two`
-- `TGetParamsMappingType.Braket` (proposed by [PR #87](https://github.com/troyanskiy/ng2-resource-rest/pull/87))<br>
-`params: ['one', 'two']` will be mapped to `/some/url?params[0]=one&params[1]=two`<br>
-`params: { data: ['one', 'two'] }` will be mapped to `/some/url?params[data][0]=one&params[data][1]=two`
-
-## Version 1.11.0
-
-Added protected method _request to Resource class. Can be used to replace default http requests with custom one.
+I recommend to create submodule in your app for all your resources.
+    
 
 
 # Docs (WIP)
@@ -525,6 +563,42 @@ Defines data
 
 #### `getParamsMappingType: any = TGetParamsMappingType.Plain`
 Defines mapping method of arrays/objects to get params
+
+
+## `ResourceModel` class
+
+
+### Default properties
+
+#### `$resource: Resource`
+Contains reference to resource instance
+
+#### `$primaryKey: string`
+Defines which field is primary key of resource model.
+
+
+### Default methods
+
+#### `$setData(data: any): ResourceModel`
+To fill model data from object.
+
+#### `isNew(): boolean`
+Returns true if model primary key have value 
+
+#### `$save(): ResourceModel`
+To call save or update according to isNew() value 
+
+#### `$create(): ResourceModel`
+To call resource's save action. 
+
+#### `$update(): ResourceModel`
+To call resource's update action. 
+
+#### `$remove(): ResourceModel`
+To call resource's remove action. 
+
+#### `toJSON(): any`
+Returns json data of model without methods and fields starts with '$'
 
 
 ## Priority of getting params by methods
