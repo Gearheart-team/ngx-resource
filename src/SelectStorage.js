@@ -1,4 +1,6 @@
-export function SelectStorage(resource, params) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+function SelectStorage(resource, params) {
     return function (target, propertyKey) {
         var nativeInit = target.ngOnInit;
         target.ngOnInit = function () {
@@ -12,3 +14,4 @@ export function SelectStorage(resource, params) {
         };
     };
 }
+exports.SelectStorage = SelectStorage;

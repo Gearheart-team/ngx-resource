@@ -1,3 +1,4 @@
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -17,9 +18,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { RequestMethod } from '@angular/http';
-import { Resource } from './Resource';
-import { ResourceAction } from './ResourceAction';
+Object.defineProperty(exports, "__esModule", { value: true });
+var http_1 = require("@angular/http");
+var Resource_1 = require("./Resource");
+var ResourceAction_1 = require("./ResourceAction");
 var ResourceCRUD = (function (_super) {
     __extends(ResourceCRUD, _super);
     function ResourceCRUD() {
@@ -30,37 +32,37 @@ var ResourceCRUD = (function (_super) {
         return this.save(data, callback);
     };
     return ResourceCRUD;
-}(Resource));
-export { ResourceCRUD };
+}(Resource_1.Resource));
 __decorate([
-    ResourceAction({
+    ResourceAction_1.ResourceAction({
         isArray: true
     }),
     __metadata("design:type", Function)
 ], ResourceCRUD.prototype, "query", void 0);
 __decorate([
-    ResourceAction({
+    ResourceAction_1.ResourceAction({
         path: '/{!id}'
     }),
     __metadata("design:type", Function)
 ], ResourceCRUD.prototype, "get", void 0);
 __decorate([
-    ResourceAction({
-        method: RequestMethod.Post
+    ResourceAction_1.ResourceAction({
+        method: http_1.RequestMethod.Post
     }),
     __metadata("design:type", Function)
 ], ResourceCRUD.prototype, "save", void 0);
 __decorate([
-    ResourceAction({
-        method: RequestMethod.Put,
+    ResourceAction_1.ResourceAction({
+        method: http_1.RequestMethod.Put,
         path: '/{!id}'
     }),
     __metadata("design:type", Function)
 ], ResourceCRUD.prototype, "update", void 0);
 __decorate([
-    ResourceAction({
-        method: RequestMethod.Delete,
+    ResourceAction_1.ResourceAction({
+        method: http_1.RequestMethod.Delete,
         path: '/{!id}'
     }),
     __metadata("design:type", Function)
 ], ResourceCRUD.prototype, "remove", void 0);
+exports.ResourceCRUD = ResourceCRUD;

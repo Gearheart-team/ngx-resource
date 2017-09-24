@@ -1,5 +1,7 @@
-import { Injector } from '@angular/core';
-import { Http } from '@angular/http';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var core_1 = require("@angular/core");
+var http_1 = require("@angular/http");
 var ResourceProviders = (function () {
     function ResourceProviders() {
     }
@@ -13,7 +15,7 @@ var ResourceProviders = (function () {
         }
         var deps = Reflect.getMetadata('design:paramtypes', resource);
         if (!deps || deps.length === 0) {
-            deps = [Http, Injector];
+            deps = [http_1.Http, core_1.Injector];
         }
         this.providers[subSet].push({
             provide: resource,
@@ -36,8 +38,8 @@ var ResourceProviders = (function () {
     };
     return ResourceProviders;
 }());
-export { ResourceProviders };
 ResourceProviders.mainProvidersName = '__mainProviders';
 ResourceProviders.providers = {
     __mainProviders: []
 };
+exports.ResourceProviders = ResourceProviders;

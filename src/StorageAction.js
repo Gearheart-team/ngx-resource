@@ -1,4 +1,6 @@
-export var StorageAction = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.StorageAction = {
     LOAD: function (storage, resp) {
         storage.resultData = resp.filter(function (item) { return !!item; });
         storage.forceRefresh();

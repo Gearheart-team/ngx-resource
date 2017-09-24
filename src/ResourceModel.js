@@ -1,3 +1,5 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var ResourceModel = (function () {
     function ResourceModel() {
         this.$cachedRelated = {};
@@ -57,4 +59,4 @@ var ResourceModel = (function () {
     };
     return ResourceModel;
 }());
-export { ResourceModel };
+exports.ResourceModel = ResourceModel;

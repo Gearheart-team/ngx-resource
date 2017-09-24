@@ -1,11 +1,13 @@
-import { Headers, Request, RequestMethod, RequestOptions, URLSearchParams } from '@angular/http';
-import { Observable } from 'rxjs/Rx';
-import { ResourceGlobalConfig, TGetParamsMappingType } from './ResourceGlobalConfig';
-import { StorageAction } from "./StorageAction";
-export function ResourceAction(methodOptions) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var http_1 = require("@angular/http");
+var Rx_1 = require("rxjs/Rx");
+var ResourceGlobalConfig_1 = require("./ResourceGlobalConfig");
+var StorageAction_1 = require("./StorageAction");
+function ResourceAction(methodOptions) {
     methodOptions = methodOptions || {};
     if (methodOptions.method === undefined) {
-        methodOptions.method = RequestMethod.Get;
+        methodOptions.method = http_1.RequestMethod.Get;
     }
     return function (target, propertyKey) {
         target[propertyKey] = function () {
@@ -26,8 +28,8 @@ export function ResourceAction(methodOptions) {
                 params = null;
             }
             var resourceOptions = this.getResourceOptions();
-            var mockRequest = ResourceGlobalConfig.mockResponses && resourceOptions.mock !== false && methodOptions.mock !== false && (!!methodOptions.mockCollection || !!resourceOptions.mockCollection);
-            var isGetRequest = methodOptions.method === RequestMethod.Get;
+            var mockRequest = ResourceGlobalConfig_1.ResourceGlobalConfig.mockResponses && resourceOptions.mock !== false && methodOptions.mock !== false && (!!methodOptions.mockCollection || !!resourceOptions.mockCollection);
+            var isGetRequest = methodOptions.method === http_1.RequestMethod.Get;
             var ret = null;
             var map = methodOptions.map ? methodOptions.map.bind(this) : this.map;
             var filter = methodOptions.filter ? methodOptions.filter : this.filter;
@@ -54,7 +56,7 @@ export function ResourceAction(methodOptions) {
             var mainDeferredSubscriber = null;
             var mainObservable = null;
             ret.$resolved = false;
-            ret.$observable = Observable.create(function (subscriber) {
+            ret.$observable = Rx_1.Observable.create(function (subscriber) {
                 mainDeferredSubscriber = subscriber;
             }).flatMap(function () { return mainObservable; });
             ret.$abortRequest = function () {
@@ -81,13 +83,13 @@ export function ResourceAction(methodOptions) {
             ])
                 .then(function (dataAll) {
                 if (ret.$resolved) {
-                    mainObservable = Observable.create(function (observer) {
+                    mainObservable = Rx_1.Observable.create(function (observer) {
                         observer.next(null);
                     });
                     releaseMainDeferredSubscriber();
                 }
                 var url = dataAll[0] + dataAll[1];
-                var headers = new Headers(dataAll[2]);
+                var headers = new http_1.Headers(dataAll[2]);
                 var defPathParams = dataAll[3];
                 var usedPathParams = {};
                 var usedPathParamsValues = {};
@@ -114,7 +116,7 @@ export function ResourceAction(methodOptions) {
                         if (isNullOrUndefined(value)) {
                             if (isMandatory) {
                                 var consoleMsg_1 = "Mandatory " + pathParam + " path parameter is missing";
-                                mainObservable = Observable.create(function (observer) {
+                                mainObservable = Rx_1.Observable.create(function (observer) {
                                     observer.error(new Error(consoleMsg_1));
                                 });
                                 console.warn(consoleMsg_1);
@@ -181,7 +183,7 @@ export function ResourceAction(methodOptions) {
                     searchParams = defPathParams;
                 }
                 // Setting search params
-                var search = !!methodOptions.queryEncoder ? new URLSearchParams('', new methodOptions.queryEncoder()) : new URLSearchParams();
+                var search = !!methodOptions.queryEncoder ? new http_1.URLSearchParams('', new methodOptions.queryEncoder()) : new http_1.URLSearchParams();
                 if (!params) {
                     for (var key in searchParams) {
                         if (searchParams.hasOwnProperty(key) && !usedPathParams[key]) {
@@ -203,7 +205,7 @@ export function ResourceAction(methodOptions) {
                     headers.delete('content-type');
                 }
                 // Creating request options
-                var requestOptions = new RequestOptions({
+                var requestOptions = new http_1.RequestOptions({
                     method: methodOptions.method,
                     headers: headers,
                     body: body,
@@ -212,12 +214,12 @@ export function ResourceAction(methodOptions) {
                     withCredentials: methodOptions.withCredentials || resourceOptions.withCredentials
                 });
                 // Creating request object
-                var req = new Request(requestOptions);
+                var req = new http_1.Request(requestOptions);
                 req = methodOptions.requestInterceptor ?
                     methodOptions.requestInterceptor(req, methodOptions) :
                     _this.requestInterceptor(req, methodOptions);
                 if (!req) {
-                    mainObservable = Observable.create(function (observer) {
+                    mainObservable = Rx_1.Observable.create(function (observer) {
                         observer.error(new Error('Request is null'));
                     });
                     console.warn('Request is null');
@@ -235,7 +237,7 @@ export function ResourceAction(methodOptions) {
                         resp = getMockedResponse(mockCollection, usedPathParamsValues, searchParams, JSON.parse(body), methodOptions.method);
                     }
                     resp = new FakeResponse(resp);
-                    requestObservable = Observable.from([resp]);
+                    requestObservable = Rx_1.Observable.from([resp]);
                     // noinspection TypeScriptValidateTypes
                     requestObservable = methodOptions.responseInterceptor ?
                         methodOptions.responseInterceptor.bind(_this)(requestObservable, req, methodOptions) :
@@ -249,7 +251,7 @@ export function ResourceAction(methodOptions) {
                     mainObservable = requestObservable;
                 }
                 else {
-                    mainObservable = Observable.create(function (subscriber) {
+                    mainObservable = Rx_1.Observable.create(function (subscriber) {
                         var reqSubscr = requestObservable.subscribe(function (resp) {
                             if (resp !== null) {
                                 if (methodOptions.isArray) {
@@ -306,13 +308,14 @@ export function ResourceAction(methodOptions) {
             });
             return ret;
         };
-        if (!!methodOptions.storageAction && methodOptions.storageAction === StorageAction.LOAD) {
+        if (!!methodOptions.storageAction && methodOptions.storageAction === StorageAction_1.StorageAction.LOAD) {
             target.storageLoad = target[propertyKey];
         }
         ;
     };
 }
-export function setDataToObject(ret, resp) {
+exports.ResourceAction = ResourceAction;
+function setDataToObject(ret, resp) {
     if (ret.$setData) {
         ret.$setData(resp);
     }
@@ -321,15 +324,16 @@ export function setDataToObject(ret, resp) {
     }
     return ret;
 }
-export function appendSearchParams(search, key, value) {
+exports.setDataToObject = setDataToObject;
+function appendSearchParams(search, key, value) {
     /// Convert dates to ISO format string
     if (value instanceof Date) {
         search.append(key, value.toISOString());
         return;
     }
     if (typeof value === 'object') {
-        switch (ResourceGlobalConfig.getParamsMappingType) {
-            case TGetParamsMappingType.Plain:
+        switch (ResourceGlobalConfig_1.ResourceGlobalConfig.getParamsMappingType) {
+            case ResourceGlobalConfig_1.TGetParamsMappingType.Plain:
                 if (Array.isArray(value)) {
                     for (var _i = 0, value_1 = value; _i < value_1.length; _i++) {
                         var arr_value = value_1[_i];
@@ -349,7 +353,7 @@ export function appendSearchParams(search, key, value) {
                     search.append(key, value);
                 }
                 break;
-            case TGetParamsMappingType.Bracket:
+            case ResourceGlobalConfig_1.TGetParamsMappingType.Bracket:
                 /// Convert object and arrays to query params
                 for (var k in value) {
                     if (value.hasOwnProperty(k)) {
@@ -362,6 +366,7 @@ export function appendSearchParams(search, key, value) {
     }
     search.append(key, value);
 }
+exports.appendSearchParams = appendSearchParams;
 function getValueForPath(key, params, data, usedPathParams) {
     if (!isNullOrUndefined(data[key]) && typeof data[key] !== 'object') {
         usedPathParams[key] = true;
@@ -404,7 +409,7 @@ var FakeResponse = (function () {
     return FakeResponse;
 }());
 function getMockedResponse(collection, params, searchParams, data, requestMethod) {
-    if (requestMethod === RequestMethod.Get) {
+    if (requestMethod === http_1.RequestMethod.Get) {
         if (Object.keys(params).length === 0) {
             return collection.collection;
         }
@@ -434,11 +439,11 @@ function getMockedResponse(collection, params, searchParams, data, requestMethod
             }
         }
     }
-    else if (requestMethod === RequestMethod.Post) {
+    else if (requestMethod === http_1.RequestMethod.Post) {
         collection.collection.push(data);
         return data;
     }
-    else if (requestMethod === RequestMethod.Put || requestMethod === RequestMethod.Patch) {
+    else if (requestMethod === http_1.RequestMethod.Put || requestMethod === http_1.RequestMethod.Patch) {
         var result = collection.collection.find(function (item) {
             for (var key in params) {
                 if (item[key] !== params[key]) {
@@ -452,7 +457,7 @@ function getMockedResponse(collection, params, searchParams, data, requestMethod
             return result;
         }
     }
-    else if (requestMethod === RequestMethod.Delete) {
+    else if (requestMethod === http_1.RequestMethod.Delete) {
         var resultIdx = collection.collection.findIndex(function (item) {
             for (var key in params) {
                 if (item[key] !== params[key]) {

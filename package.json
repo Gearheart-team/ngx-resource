@@ -1,6 +1,6 @@
 {
   "name": "ngx-resource-gearheart",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Angular2 resource module with simple decorators. Customized by Gearheart.",
   "scripts": {
     "clear": "rm ./*.d.ts && rm ./*.metadata.json && rm ./index.js && rm ./ngx-resource.js && rm ./src/*.json && rm ./src/*.d.ts && rm ./src/*.js",

@@ -1,4 +1,6 @@
-import { BehaviorSubject } from "rxjs/BehaviorSubject";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var BehaviorSubject_1 = require("rxjs/BehaviorSubject");
 var ResourceStorage = (function () {
     function ResourceStorage(resource, queryParams) {
         this.resource = resource;
@@ -7,7 +9,7 @@ var ResourceStorage = (function () {
         this.resultData = [];
         this.queryParams = queryParams || {};
         this.result = Object.assign(this.resultData, { $load: this.load.bind(this), $resolved: false });
-        this._resultSubject = new BehaviorSubject(this.result);
+        this._resultSubject = new BehaviorSubject_1.BehaviorSubject(this.result);
         this.result.$observable = this._resultSubject.asObservable();
         this.result.$resource = this.resource;
         this.load();
@@ -31,4 +33,4 @@ var ResourceStorage = (function () {
     };
     return ResourceStorage;
 }());
-export { ResourceStorage };
+exports.ResourceStorage = ResourceStorage;
